@@ -64,6 +64,7 @@ public class ShopController {
         custPassword = ByteUtil.getMD5(custTel + custPassword);
         pmap.put("custPassword", custPassword);
         ResponseEntity res;
+        System.out.println("测试jenkins");
         try {
             int count = baseService.insert("apiservice.Shop.addShop", pmap);
             if (count > 0){
