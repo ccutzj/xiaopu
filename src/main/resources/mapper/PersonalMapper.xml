@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="apiservice.Personal" >
+  
+   <insert id="insertclockdetail" parameterType="java.util.Map">
+           insert into t_app_personal_clock_detail ( 
+             id,
+             n_personid,  
+              d_date, 
+              n_time,  
+              i_clock_num, 
+                 i_success,
+                    c_province,  
+                     c_address,
+                     d_time
+                     )
+             values(
+             #{id},
+                 #{n_personid},  
+              #{d_date}, 
+              #{n_time},  
+               #{i_clock_num},
+                 #{i_success},
+                    #{c_province},  
+                     #{c_address},
+                      #{d_time}
+             )
+             
+   </insert>
+   
+     <insert id="insertclock" parameterType="java.util.Map">
+           insert into t_app_personal_clock  
+           <trim prefix="(" suffix=")" suffixOverrides=",">
+           n_personid,
+           d_date,  
+            i_clock_num,   
+            i_normal_num,  
+              
+             <if test="one != null">
+             one,  
+             </if> 
+              <if test="two != null">
+             two,    
+             </if> 
+             <if test="i_success != null">
+              i_success
+              </if>   
+            </trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+               #{n_personid},
+           #{d_date},  
+            #{i_clock_num},   
+            #{i_normal_num},  
+               <if test="one != null">
+              #{one},
+              </if> 
+              <if test="two != null">
+              #{two},
+              </if> 
+              <if test="i_success != null">
+              #{i_success}
+              </if> 
+            </trim>
+   </insert>
+   
+    <insert id="updateclock" parameterType="java.util.Map">
+           update t_app_personal_clock  
+           <trim prefix="set"  suffixOverrides=",">
+             <if test="i_clock_num != null">
+				i_clock_num = #{i_clock_num},
+			 </if>
+			  <if test="i_normal_num != null">
+				i_normal_num = #{i_normal_num},
+			 </if>
+			  <if test="one != null">
+				one = #{one},
+			 </if>
+			  <if test="two != null">
+				two = #{two},
+			 </if>
+			  <if test="i_success != null">
+				i_success = #{i_success},
+			 </if>
+           </trim> 
+           where   n_personid = #{n_personid} and d_date = #{d_date}
+            
+   </insert>
+   
+    
+
+   
+   <select id="persionclockcount" resultType="java.util.HashMap" parameterType="java.util.Map">
+select i_clock_num,i_success
+from t_app_personal_clock 
+where  n_personid= #{n_personid} and d_date =  #{d_date}
+</select>
+
+ 
+  
+  <select id="clockinfo" resultType="java.util.HashMap" parameterType="java.util.Map">
+select  c_onsite_standard, --现场勘查规范
+	c_first_begin,     --第一次打卡开始时间 【为时间格式 hh:mm:ss】
+	c_first_end,       --第一次打卡结束时间  【为时间格式 hh:mm:ss】
+	c_second_begin,    --第二次打卡开始时间  【为时间格式 hh:mm:ss,如果为空，则每天只打一次卡】
+	c_second_end,       --第二次打卡结束时间  【为时间格式 hh:mm:ss,如果为空，则每天只打一次卡】
+	i_num		--公司规定每日打卡次数	
+from t_app_sys_setup
+where n_setupid = 0
+
+</select>
+
+  <select id="persionclocklist" resultType="java.util.HashMap" parameterType="java.util.Map">
+select n_personid,   
+CONVERT(varchar(100), d_time, 20) d_date,   
+i_clock_num,   i_success,   c_province,   c_address
+from t_app_personal_clock_detail 
+where n_personid=#{adc_id}
+and d_date <![CDATA[ >= ]]>#{adt_begin}  and d_date <![CDATA[ <= ]]>#{adt_end}
+
+
+</select>
+
+  <select id="clocksum" resultType="java.util.HashMap" parameterType="java.util.Map">
+select n_personid,(select a.c_basic_name from t_sys_basic a where a.n_basicid= t_app_personal_clock.n_personid) as 'c_person',
+       (select a.c_basic_name from t_sys_basic a,t_sys_user b where a.n_basicid= b.n_unitid and b.n_basicid=t_app_personal_clock.n_personid) as 'c_unit',
+       sum(i_clock_num) as 'i_clock_num'
+       
+from  t_app_personal_clock
+where d_date<![CDATA[ >= ]]>#{adt_begin} and d_date <![CDATA[ <= ]]>#{adt_end}
+group by n_personid
+
+
+</select>
+  
+   
+  
+</mapper>

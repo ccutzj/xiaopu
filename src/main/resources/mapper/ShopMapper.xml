@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="apiservice.Shop">
+
+
+    <select id="provinceList"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select areaId,areaName from shop_area where areaType = 1
+    </select>
+    
+    <select id="cityList"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select areaId,areaName from shop_area where areaType = 2 and pAreaId = #{areaId} 
+    </select>
+    
+     <select id="areaList"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select areaId,areaName from shop_area where areaType = 3 and pAreaId = #{areaId}
+    </select>
+    
+      <select id="smallAreaList"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select areaId,areaName from shop_area where areaType = 4 and pAreaId = #{areaId}
+    </select>
+
+	<insert id="addShop" parameterType="java.util.Map">
+		insert into shop_shop
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="shopId != null">
+				shopId,
+			</if>
+			<if test="shopName != null">
+				shopName,
+			</if>
+			<if test="shopAddress != null">
+				shopAddress,
+			</if>
+			<if test="shopPic != null">
+				shopPic,
+			</if>
+			<if test="licencePic != null">
+				licencePic,
+			</if>
+			<if test="custName != null">
+				custName,
+			</if>
+			<if test="custNumber != null">
+				custNumber,
+			</if>
+			<if test="custTel != null">
+				custTel,
+			</if>
+			<if test="custPassword != null">
+				custPassword,
+			</if>
+			<if test="openId != null">
+				openId,
+			</if>
+			<if test="orderNumber != null">
+				orderNumber,
+			</if>
+			<if test="bTime != null">
+				bTime,
+			</if>
+			<if test="eTime != null">
+				eTime,
+			</if>
+			<if test="deliverState != null">
+				deliverState,
+			</if>
+			<if test="initPrice != null">
+				initPrice,
+			</if>
+			<if test="state != null">
+				state,
+			</if>
+			<if test="openState != null">
+				openState,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="shopId != null">
+				#{shopId},
+			</if>
+			<if test="shopName != null">
+				#{shopName},
+			</if>
+			<if test="shopAddress != null">
+				#{shopAddress},
+			</if>
+			<if test="shopPic != null">
+				#{shopPic},
+			</if>
+			<if test="licencePic != null">
+				#{licencePic},
+			</if>
+			<if test="custName != null">
+				#{custName},
+			</if>
+			<if test="custNumber != null">
+				#{custNumber},
+			</if>
+			<if test="custTel != null">
+				#{custTel},
+			</if>
+			<if test="custPassword != null">
+				#{custPassword},
+			</if>
+			<if test="openId != null">
+				#{openId},
+			</if>
+			<if test="orderNumber != null">
+				#{orderNumber},
+			</if>
+			<if test="bTime != null">
+				#{bTime},
+			</if>
+			<if test="eTime != null">
+				#{eTime},
+			</if>
+			<if test="deliverState != null">
+				#{deliverState},
+			</if>
+			<if test="initPrice != null">
+				#{initPrice},
+			</if>
+			<if test="state != null">
+				#{state},
+			</if>
+				<if test="openState != null">
+				#{openState},
+			</if>
+		</trim>
+
+	</insert>
+
+	<update id="updateShop" parameterType="java.util.Map">
+		update shop_shop
+		<trim prefix="set" suffixOverrides=",">
+
+			<if test="shopName != null">
+				shopName = #{shopName},
+			</if>
+			<if test="shopAddress != null">
+				shopAddress = #{shopAddress},
+			</if>
+			<if test="shopPic != null">
+				shopPic = #{shopPic},
+			</if>
+			<if test="custName != null">
+				custName =#{custName},
+			</if>
+			<if test="custTel != null">
+				custTel = #{custTel},
+			</if>
+			<if test="custPassword != null">
+				custPassword = #{custPassword},
+			</if>
+			<if test="openId != null">
+				openId = #{openId},
+			</if>
+			<if test="orderNumber != null">
+				orderNumber = #{orderNumber},
+			</if>
+			<if test="bTime != null">
+				bTime = #{bTime},
+			</if>
+			<if test="eTime != null">
+				eTime = #{eTime},
+			</if>
+			<if test="deliverState != null">
+				deliverState = #{deliverState},
+			</if>
+			<if test="initPrice != null">
+				initPrice = #{initPrice},
+			</if>
+			<if test="state != null">
+				state = #{state},
+			</if>
+			<if test="openState != null">
+				openState = #{openState},
+			</if>
+		</trim>
+		where shopId = #{shopId}
+	</update>
+  <select id="login"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select shopId,shopName,shopAddress,orderNumber,custName,custTel,custPassword,openId,orderNumber,bTime,eTime,deliverState,initPrice,state
+        from shop_shop  
+        where  custTel = #{custTel}  and  custPassword = #{custPassword}  and  state = 1
+		 
+  </select>
+  <select id="shopList"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select shopId,shopName,shopAddress,orderNumber,custName,custTel,custPassword,openId,orderNumber,bTime,eTime,deliverState,initPrice,state,openState
+        from shop_shop  
+      
+  </select>
+  
+  <select id="shopListByArea"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select a.shopId,shopName,shopAddress,orderNumber,custName,custTel,custPassword,openId,orderNumber,bTime,eTime,deliverState,initPrice,state,openState
+        from shop_shop a left join shop_shoparea b on a.shopId = b.shopId
+		where a.state = 1 and b.areaId = #{areaId}
+  </select>
+
+
+
+
+
+</mapper>

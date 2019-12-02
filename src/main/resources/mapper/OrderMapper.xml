@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="apiservice.Order">
+
+
+
+
+	<insert id="addOrder" parameterType="java.util.Map">
+		insert into ${table}
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="orderId != null">
+				orderId,
+			</if>
+			<if test="orderState != null">
+				orderState,
+			</if>
+			<if test="customerId != null">
+				customerId,
+			</if>
+			<if test="ordererName != null">
+				ordererName,
+			</if>
+			<if test="ordererAddress != null">
+				ordererAddress,
+			</if>
+			<if test="ordererTel != null">
+				ordererTel,
+			</if>
+			<if test="ordererArea != null">
+				ordererArea,
+			</if>
+			<if test="orderTime != null">
+				orderTime,
+			</if>
+			<if test="handleTime != null">
+				handleTime,
+			</if>
+			<if test="orderPrice != null">
+				orderPrice,
+			</if>
+			<if test="remarks != null">
+				remarks,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="orderId != null">
+				#{orderId},
+			</if>
+			<if test="orderState != null">
+				#{orderState},
+			</if>
+			<if test="customerId != null">
+				#{customerId},
+			</if>
+			<if test="ordererName != null">
+				#{ordererName},
+			</if>
+			<if test="ordererAddress != null">
+				#{ordererAddress},
+			</if>
+			<if test="ordererTel != null">
+				#{ordererTel},
+			</if>
+			<if test="ordererArea != null">
+				#{ordererArea},
+			</if>
+			<if test="orderTime != null">
+				#{orderTime},
+			</if>
+			<if test="handleTime != null">
+				#{handleTime},
+			</if>
+			<if test="orderPrice != null">
+				#{orderPrice},
+			</if>
+			<if test="remarks != null">
+				#{remarks},
+			</if>
+		</trim>
+
+	</insert>
+
+	<insert id="addOrderGoods" parameterType="java.util.Map">
+		insert into ${table}
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="orderId != null">
+				orderId,
+			</if>
+			<if test="goodsId != null">
+				goodsId,
+			</if>
+			<if test="goodsName != null">
+				goodsName,
+			</if>
+			<if test="goodsPic != null">
+				goodsPic,
+			</if>
+			<if test="specs != null">
+				specs,
+			</if>
+			<if test="goodsPrice != null">
+				goodsPrice,
+			</if>
+			<if test="quantity != null">
+				quantity,
+			</if>
+			<if test="amount != null">
+				amount,
+			</if>
+
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="orderId != null">
+				#{orderId,
+			</if>
+			<if test="goodsId != null">
+				#{goodsId,
+			</if>
+			<if test="goodsName != null">
+				goodsName,
+			</if>
+			<if test="goodsPic != null">
+				goodsPic,
+			</if>
+			<if test="specs != null">
+				specs,
+			</if>
+			<if test="goodsPrice != null">
+				goodsPrice,
+			</if>
+			<if test="quantity != null">
+				quantity,
+			</if>
+			<if test="amount != null">
+				amount,
+			</if>
+		</trim>
+
+	</insert>
+
+	<update id="updateOrder" parameterType="java.util.Map">
+		update ${table}
+		<trim prefix="set" suffixOverrides=",">
+
+			<if test="orderState != null">
+				orderState = #{orderState},
+			</if>
+			<if test="customerId != null">
+				customerId = #{customerId},
+			</if>
+			<if test="ordererName != null">
+				ordererName =#{ordererName},
+			</if>
+			<if test="ordererAddress != null">
+				ordererAddress = #{ordererAddress},
+			</if>
+			<if test="ordererTel != null">
+				ordererTel = #{ordererTel},
+			</if>
+			<if test="ordererArea != null">
+				ordererArea = #{ordererArea},
+			</if>
+			<if test="orderTime != null">
+				orderTime = #{orderTime},
+			</if>
+			<if test="handleTime != null">
+				handleTime = #{handleTime},
+			</if>
+			<if test="orderPrice != null">
+				orderPrice = #{orderPrice},
+			</if>
+			<if test="remarks != null">
+				remarks = #{remarks},
+			</if>
+
+		</trim>
+		where orderId = #{orderId}
+	</update>
+
+	<select id="orderList" resultType="java.util.HashMap"
+		parameterType="java.util.Map">
+		select
+		orderId,
+		orderState,
+		customerId,
+		ordererName,
+		ordererAddress,
+		ordererTel,
+		ordererArea,
+		orderTime,
+		handleTime,
+		orderPrice,
+		remarks
+		from ${table}
+		<where>
+			<if test="orderState != null">
+				and orderState = #{orderState}
+			</if>
+			<if test="customerId != null">
+				and customerId = #{customerId}
+			</if>
+		</where>
+		order by orderTime desc
+	</select>
+
+	<select id="orderGoodsList" resultType="java.util.HashMap"
+		parameterType="java.util.Map">
+		select
+		orderId,
+		goodsId,
+		goodsName,
+		goodsPic,
+		specs,
+		goodsPrice,
+		quantity,
+		amount
+		from ${table}
+		<where>
+			<if test="orderId != null">
+				and orderId = #{orderId}
+			</if>
+
+		</where>
+	</select>
+
+
+
+
+
+</mapper>

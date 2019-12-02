@@ -1,0 +1,665 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="apiservice.SaleOrder">
+
+	<select id="list" resultType="java.util.HashMap" parameterType="java.util.Map">
+	
+	select  t_sale_order_form.n_orderid ,        	--订单id            
+	t_sale_order_form.n_report_unitid ,      --上报单位id      
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_report_unitid) as 'as_unitname', --上报单位
+	CONVERT(varchar(100), t_sale_order_form.d_order_date, 20)  d_order_date ,           --订单日期   
+	CONVERT(varchar(100), t_sale_order_form.d_deliver_date, 20) d_deliver_date ,     	--交付日期
+	t_sale_order_form.c_order_code  , 	--订单号
+	CONVERT(varchar(100), t_sale_order_form.d_audit_date, 20) d_audit_date,		--审核日期
+	t_sale_order_form.n_auditer,		--审核人id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid=  t_sale_order_form.n_auditer) 'c_auditer',--审核人
+	t_sale_order_form.n_tableerid , --制单人id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_tableerid) as 'as_tableer',--制单人
+	  t_sale_order_form.n_scdwid,--*** 生产单位
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_scdwid) as 'as_scdw'--***生产单位
+from 	t_sale_order_form         
+where t_sale_order_form.n_auditer is null
+<if test="adc_id != null and adc_id !=''">
+and   t_sale_order_form.n_tableerid = #{adc_id} --当前操作者id
+</if>
+order by t_sale_order_form.d_audit_date          desc  , t_sale_order_form.c_order_code          asc
+
+	</select>
+	
+	<select id="list2" resultType="java.util.HashMap" parameterType="java.util.Map">
+	select  t_sale_order_form.n_orderid ,        	--订单id            
+	t_sale_order_form.n_report_unitid ,      --上报单位id      
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_report_unitid) as 'as_unitname', --上报单位
+	CONVERT(varchar(100), t_sale_order_form.d_order_date, 20) d_order_date ,           --订单日期   
+	CONVERT(varchar(100), t_sale_order_form.d_deliver_date, 20) d_deliver_date ,     	--交付日期
+	t_sale_order_form.c_order_code  , 	--订单号
+	CONVERT(varchar(100), t_sale_order_form.d_audit_date, 20)  d_audit_date,		--审核日期
+	t_sale_order_form.n_auditer,		--审核人id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid=  t_sale_order_form.n_auditer) 'c_auditer',--审核人
+	t_sale_order_form.n_tableerid , --制单人id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_tableerid) as 'as_tableer',--制单人
+	t_sale_order_form.n_scdwid,          --生产单位
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_scdwid) as 'as_scdw',--***生产单位
+	(select count(*) from t_produce_requisition_entry a where a.n_orderid>0 and a.n_orderid=t_sale_order_form.n_orderid) as 'ai_row'--***大于零证明该订单已经被评审,不能反审核
+from 	t_sale_order_form         
+where (  (t_sale_order_form.d_audit_date <![CDATA[ >= ]]>   #{adt_begin}
+and          t_sale_order_form.d_audit_date <![CDATA[ < ]]>   #{adt_end} )   or  t_sale_order_form.n_auditer is null)
+and    n_report_unitid in (select a.n_qxid from t_sys_user_qx a where a.n_userid =#{adc_id} and i_qxtype = 6)--当前操作者id
+order by t_sale_order_form.d_audit_date          desc  , t_sale_order_form.c_order_code          asc
+
+
+	</select>
+	
+	
+	<select id="getorder" resultType="java.util.HashMap" parameterType="java.util.Map">
+     select  t_sale_order_form.n_report_unitid ,  --上报单位id            
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_report_unitid) as 'as_unitname', --上报单位
+	CONVERT(varchar(100), t_sale_order_form.d_order_date, 20)  d_order_date,              --订单日期 
+	CONVERT(varchar(100), t_sale_order_form.d_deliver_date, 20)  d_deliver_date ,             --交付日期
+	t_sale_order_form.n_tableerid ,            --制单人id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_tableerid) as 'as_tableer',--制单人
+	CONVERT(varchar(100), t_sale_order_form.d_table_date, 20) d_table_date ,            --制单日期
+	t_sale_order_form.c_order_code ,               --订单号
+	t_sale_order_form.n_orderid ,			--订单id    
+	t_sale_order_form.n_auditer,                    --审核人id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid=  t_sale_order_form.n_auditer) 'c_auditer',--审核人
+	CONVERT(varchar(100), t_sale_order_form.d_audit_date, 20) d_audit_date ,                --审核日期
+	t_sale_order_form.c_remark,          --备注
+	t_sale_order_form.n_scdwid,          --生产单位
+	(select count(*) from t_produce_requisition_entry a where a.n_orderid>0 and a.n_orderid=t_sale_order_form.n_orderid) as 'ai_row'--大于零证明该订单已经被评审
+    from 	t_sale_order_form          
+    where ( t_sale_order_form.n_orderid = #{n_orderid} )  
+    
+
+    
+	</select>
+	
+	<select id="getorderentry" resultType="java.util.HashMap" parameterType="java.util.Map">
+	select  t_sale_order_form_entry.n_orderid ,           --订单id
+	t_sale_order_form_entry.n_productid ,         --产品id   
+	(select a.c_basic_name+'|'+a.c_basic_code from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_productid ) as 'c_cpname',--产品名称
+	t_sale_order_form_entry.n_customid ,           --客户id
+	(select a.c_basic_name+'|'+a.c_basic_code from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_customid ) as 'c_cwname',--客户名称
+	t_sale_order_form_entry.n_product_type_id ,          --产品大类id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_product_type_id ) as 'c_dlname',--产品大类名称
+	t_sale_order_form_entry.n_product_unitid ,           
+	t_sale_order_form_entry.n_colorid ,           --颜色id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_colorid ) as 'c_ysname',--颜色名称
+	t_sale_order_form_entry.i_press_blank ,       --压边id    【0、否1、单2、双3、筒】
+	t_sale_order_form_entry.i_ybtype,              --压边类型 【0、  1、前2、后】
+	t_sale_order_form_entry.n_cutid ,             --剖id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_cutid ) as 'c_cutname',--单双剖
+	t_sale_order_form_entry.n_length ,            --长度
+	t_sale_order_form_entry.n_width ,             --宽度
+	t_sale_order_form_entry.n_thinckness ,        --厚度   
+	t_sale_order_form_entry.n_public_errand_add , --公差+ (最多三位小数，如果是 0.085则显示0.085如果是0.1显示为0.10)        
+	t_sale_order_form_entry.n_public_errand ,     --公差- (最多三位小数，如果是 0.085则显示0.085如果是0.1显示为0.10)
+	t_sale_order_form_entry.c_gc,                 --公差（方米）         
+	t_sale_order_form_entry.n_packages ,          --件数  （录入显示都为整数）
+	t_sale_order_form_entry.n_weight ,            --单件重量(kg)
+	t_sale_order_form_entry.n_total_weight ,      --总重量(kg)     
+	t_sale_order_form_entry.n_ppid ,              --品牌id
+	
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_ppid ) as 'c_ppname', --品牌名称
+	
+	t_sale_order_form_entry.c_fhbz,               --发货备注
+	t_sale_order_form_entry.c_remark ,            --备注   （不超过20个字符） 
+	t_sale_order_form_entry.n_price ,             --单价  （两位小数）
+	CONVERT(varchar(100), t_sale_order_form_entry.d_delivery_date, 20)  d_delivery_date ,     --交付日期      【从表体带入，允许用户修改】
+	t_sale_order_form_entry.n_stoper ,            --停止人id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_stoper ) as 'c_stopname',--停止人
+	CONVERT(varchar(100), t_sale_order_form_entry.d_stop_date, 20)  d_stop_date,         --停止日期  
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_finisher ) as 'c_finishname',--完成人
+	t_sale_order_form_entry.n_finisher ,          --完成人id 
+	CONVERT(varchar(100), t_sale_order_form_entry.d_finish_date, 20) d_finish_date ,       --完成日期  
+	  
+	t_sale_order_form_entry.n_userid ,            --业务员id 【默认为当前操作者id】
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_userid ) as 'c_username',--业务员
+	t_sale_order_form_entry.n_tzd_weight ,        --暂不用   
+	t_sale_order_form_entry.n_rwd_weight ,        --暂不用  
+	t_sale_order_form_entry.n_had_weight ,        --暂不用  
+	t_sale_order_form_entry.n_in_weight ,         --暂不用  
+	t_sale_order_form_entry.n_give_weight ,       --暂不用    
+	t_sale_order_form_entry.i_sctype ,           --暂不用
+	t_sale_order_form_entry.n_entryid ,           --表体id
+	t_sale_order_form_entry.n_cptymcid ,          --暂不用
+	t_sale_order_form_entry.i_write_total,        --暂不用
+	t_sale_order_form_entry.i_remark             --是否有明细(1,为该表体有明细0位该表体没有明细，保存表体明细是同时更新本字段)
+from 	t_sale_order_form_entry
+where ( t_sale_order_form_entry.n_orderid = #{n_orderid} )
+	 
+	
+	</select>
+	
+ <delete  id="deleteorderentry" parameterType="java.util.Map">
+	      delete from t_sale_order_form_entry
+	      where n_orderid = #{n_orderid}
+	</delete>
+	<delete  id="deleteorderdetail" parameterType="java.util.Map">
+	      delete from t_sale_order_form_detail
+	      where n_orderid = #{n_orderid}
+	</delete>
+	<delete  id="deleteorder" parameterType="java.util.Map">
+	      delete from t_sale_order_form
+	      where n_orderid = #{n_orderid}
+	</delete>
+	
+
+<!--	<insert id="insertsaleorderform" parameterType="com.school.entity.SaleOrder">-->
+<!--		insert into t_sale_order_form-->
+<!--		<trim prefix="(" suffix=")" suffixOverrides=",">-->
+<!--			<if test="n_orderid != null">-->
+<!--				n_orderid,-->
+<!--			</if>-->
+<!--			<if test="c_order_code != null">-->
+<!--				c_order_code,-->
+<!--			</if>-->
+<!--			<if test="n_report_unitid != null">-->
+<!--				n_report_unitid,-->
+<!--			</if>-->
+<!--			<if test="d_order_date != null">-->
+<!--				d_order_date,-->
+<!--			</if>-->
+<!--			<if test="n_scdwid != null">-->
+<!--				n_scdwid,-->
+<!--			</if>-->
+<!--			<if test="n_tableerid != null">-->
+<!--				n_tableerid,-->
+<!--			</if>-->
+<!--			<if test="c_remark != null">-->
+<!--				c_remark,-->
+<!--			</if>-->
+<!--			<if test="d_deliver_date != null">-->
+<!--				d_deliver_date,-->
+<!--			</if>-->
+<!--		</trim>-->
+<!--		<trim prefix="values (" suffix=")" suffixOverrides=",">-->
+<!--			<if test="n_orderid != null">-->
+<!--				#{n_orderid},-->
+<!--			</if>-->
+<!--			<if test="c_order_code != null">-->
+<!--				#{c_order_code},-->
+<!--			</if>-->
+<!--			<if test="n_report_unitid != null">-->
+<!--				#{n_report_unitid},-->
+<!--			</if>-->
+<!--			getdate(),-->
+<!--			<if test="n_scdwid != null">-->
+<!--				#{n_scdwid},-->
+<!--			</if>-->
+<!--			<if test="n_tableerid != null">-->
+<!--				#{n_tableerid},-->
+<!--			</if>-->
+<!--			<if test="c_remark != null">-->
+<!--				#{c_remark},-->
+<!--			</if>-->
+<!--			<if test="d_deliver_date != null">-->
+<!--				#{d_deliver_date},-->
+<!--			</if>-->
+<!--		</trim>-->
+<!--	</insert>-->
+
+<!--    <insert id="insertsaleorderformentry" parameterType="com.school.entity.SaleOrderEntry">-->
+<!--		insert into t_sale_order_form_entry-->
+<!--		<trim prefix="(" suffix=")" suffixOverrides=",">-->
+<!--			<if test="n_entryid != null">-->
+<!--				n_entryid,-->
+<!--			</if>-->
+<!--			<if test="n_orderid != null">-->
+<!--				n_orderid,-->
+<!--			</if>-->
+<!--			<if test="n_productid != null">-->
+<!--				n_productid,-->
+<!--			</if>-->
+<!--			<if test="n_product_type_id != null">-->
+<!--				n_product_type_id,-->
+<!--			</if>-->
+<!--		 -->
+<!--				<if test="n_product_unitid != null">-->
+<!--				n_product_unitid,-->
+<!--			</if>-->
+<!--			<if test="n_customid != null">-->
+<!--				n_customid,-->
+<!--			</if>-->
+<!--			<if test="n_colorid != null">-->
+<!--				n_colorid,-->
+<!--			</if>-->
+<!--			<if test="n_width != null">-->
+<!--				n_width,-->
+<!--			</if>-->
+<!--			<if test="n_thinckness != null">-->
+<!--				n_thinckness,-->
+<!--			</if>-->
+<!--			<if test="n_cutid != null">-->
+<!--				n_cutid,-->
+<!--			</if>-->
+<!--			<if test="i_press_blank != null">-->
+<!--				i_press_blank,-->
+<!--			</if>-->
+<!--			<if test="n_public_errand_add != null">-->
+<!--				n_public_errand_add,-->
+<!--			</if>-->
+<!--			<if test="n_public_errand != null">-->
+<!--				n_public_errand,-->
+<!--			</if>-->
+<!--			<if test="c_gc != null">-->
+<!--				c_gc,-->
+<!--			</if>-->
+<!--			<if test="n_length != null">-->
+<!--				n_length,-->
+<!--			</if>-->
+<!--			<if test="n_weight != null">-->
+<!--				n_weight,-->
+<!--			</if>-->
+<!--			<if test="n_packages != null">-->
+<!--				n_packages,-->
+<!--			</if>-->
+<!--			<if test="n_total_weight != null">-->
+<!--				n_total_weight,-->
+<!--			</if>-->
+<!--			<if test="n_price != null">-->
+<!--				n_price,-->
+<!--			</if>-->
+<!--			<if test="n_userid != null">-->
+<!--				n_userid,-->
+<!--			</if>-->
+<!--			<if test="n_ppid != null">-->
+<!--				n_ppid,-->
+<!--			</if>-->
+<!--			<if test="c_fhbz != null">-->
+<!--				c_fhbz,-->
+<!--			</if>-->
+<!--			<if test="c_remark != null">-->
+<!--				c_remark,-->
+<!--			</if>-->
+<!--			<if test="i_sctype != null">-->
+<!--				i_sctype,-->
+<!--			</if>-->
+<!--			-->
+<!--		</trim>-->
+<!--		<trim prefix="values (" suffix=")" suffixOverrides=",">-->
+<!--			 -->
+<!--			<if test="n_entryid != null">-->
+<!--				#{n_entryid},-->
+<!--			</if>-->
+<!--			<if test="n_orderid != null">-->
+<!--				#{n_orderid},-->
+<!--			</if>-->
+<!--			<if test="n_productid != null">-->
+<!--				#{n_productid},-->
+<!--			</if>-->
+<!--			<if test="n_product_type_id != null">-->
+<!--				#{n_product_type_id},-->
+<!--			</if>-->
+<!--			<if test="n_product_unitid != null">-->
+<!--				#{n_product_unitid},-->
+<!--			</if>-->
+<!--			<if test="n_customid != null">-->
+<!--				#{n_customid},-->
+<!--			</if>-->
+<!--			<if test="n_colorid != null">-->
+<!--				#{n_colorid},-->
+<!--			</if>-->
+<!--			<if test="n_width != null">-->
+<!--				#{n_width},-->
+<!--			</if>-->
+<!--			<if test="n_thinckness != null">-->
+<!--				#{n_thinckness},-->
+<!--			</if>-->
+<!--			<if test="n_cutid != null">-->
+<!--				#{n_cutid},-->
+<!--			</if>-->
+<!--			<if test="i_press_blank != null">-->
+<!--				#{i_press_blank},-->
+<!--			</if>-->
+<!--			<if test="n_public_errand_add != null">-->
+<!--				#{n_public_errand_add},-->
+<!--			</if>-->
+<!--			<if test="n_public_errand != null">-->
+<!--				#{n_public_errand},-->
+<!--			</if>-->
+<!--			<if test="c_gc != null">-->
+<!--				#{c_gc},-->
+<!--			</if>-->
+<!--			<if test="n_length != null">-->
+<!--				#{n_length},-->
+<!--			</if>-->
+<!--			<if test="n_weight != null">-->
+<!--				#{n_weight},-->
+<!--			</if>-->
+<!--			<if test="n_packages != null">-->
+<!--				#{n_packages},-->
+<!--			</if>-->
+<!--			<if test="n_total_weight != null">-->
+<!--				#{n_total_weight},-->
+<!--			</if>-->
+<!--			<if test="n_price != null">-->
+<!--				#{n_price},-->
+<!--			</if>-->
+<!--			<if test="n_userid != null">-->
+<!--				#{n_userid},-->
+<!--			</if>-->
+<!--			<if test="n_ppid != null">-->
+<!--				#{n_ppid},-->
+<!--			</if>-->
+<!--			<if test="c_fhbz != null">-->
+<!--				#{c_fhbz},-->
+<!--			</if>-->
+<!--			<if test="c_remark != null">-->
+<!--				#{c_remark},-->
+<!--			</if>-->
+<!--			<if test="i_sctype != null">-->
+<!--				#{i_sctype},-->
+<!--			</if>-->
+<!--		</trim>-->
+<!--	</insert>-->
+<!--	-->
+<!--	<update id="updatesaleorderform" parameterType="com.school.entity.SaleOrder">-->
+<!--		update t_sale_order_form-->
+<!--		<trim prefix="set"  suffixOverrides=",">-->
+<!--			-->
+<!--			<if test="n_report_unitid != null">-->
+<!--				n_report_unitid = #{n_report_unitid},-->
+<!--			</if>-->
+<!--			<if test="d_order_date != null">-->
+<!--				d_order_date = #{d_order_date},-->
+<!--			</if>-->
+<!--			<if test="n_scdwid != null">-->
+<!--				n_scdwid =#{n_scdwid},-->
+<!--			</if>-->
+<!--			<if test="n_tableerid != null">-->
+<!--				n_tableerid = #{n_tableerid},-->
+<!--			</if>-->
+<!--			<if test="c_remark != null">-->
+<!--				c_remark = #{c_remark},-->
+<!--			</if>-->
+<!--		</trim>-->
+<!--		  where n_orderid = #{n_orderid}-->
+<!--	</update>-->
+<!--	-->
+<!--	<update id="updatesaleorderformentry" parameterType="com.school.entity.SaleOrderEntry">-->
+<!--		update t_sale_order_form_entry-->
+<!--		<trim prefix="set"  suffixOverrides=",">-->
+<!--		<if test="i_sctype != null">-->
+<!--				i_sctype = #{i_sctype},-->
+<!--			</if>-->
+<!--			<if test="n_entryid != null">-->
+<!--				n_entryid = #{n_entryid},-->
+<!--			</if>-->
+<!--			<if test="n_orderid != null">-->
+<!--				n_orderid = #{n_orderid},-->
+<!--			</if>-->
+<!--			<if test="n_productid != null">-->
+<!--				n_productid = #{n_productid},-->
+<!--			</if>-->
+<!--			<if test="n_customid != null">-->
+<!--				n_customid = #{n_customid},-->
+<!--			</if>-->
+<!--			-->
+<!--			<if test="n_width != null">-->
+<!--				n_width = #{n_width},-->
+<!--			</if>-->
+<!--			<if test="n_thinckness != null">-->
+<!--				n_thinckness = #{n_thinckness},-->
+<!--			</if>-->
+<!--			<if test="n_cutid != null">-->
+<!--				n_cutid = #{n_cutid},-->
+<!--			</if>-->
+<!--			<if test="i_press_blank != null">-->
+<!--				i_press_blank = #{i_press_blank},-->
+<!--			</if>-->
+<!--			<if test="n_public_errand_add != null">-->
+<!--				n_public_errand_add = #{n_public_errand_add},-->
+<!--			</if>-->
+<!--			<if test="n_public_errand != null">-->
+<!--				n_public_errand = #{n_public_errand},-->
+<!--			</if>-->
+<!--			<if test="c_gc != null">-->
+<!--				c_gc = #{c_gc},-->
+<!--			</if>-->
+<!--			<if test="n_length != null">-->
+<!--				n_length = #{n_length},-->
+<!--			</if>-->
+<!--			<if test="n_weight != null">-->
+<!--				n_weight = #{n_weight},-->
+<!--			</if>-->
+<!--			<if test="n_packages != null">-->
+<!--				n_packages = #{n_packages},-->
+<!--			</if>-->
+<!--			<if test="n_total_weight != null">-->
+<!--				n_total_weight = #{n_total_weight},-->
+<!--			</if>-->
+<!--			<if test="n_price != null">-->
+<!--				n_price = #{n_price},-->
+<!--			</if>-->
+<!--			<if test="n_userid != null">-->
+<!--				n_userid = #{n_userid},-->
+<!--			</if>-->
+<!--			<if test="n_ppid != null">-->
+<!--				n_ppid = #{n_ppid},-->
+<!--			</if>-->
+<!--			<if test="c_fhbz != null">-->
+<!--				c_fhbz = #{c_fhbz},-->
+<!--			</if>-->
+<!--			<if test="c_remark != null">-->
+<!--				c_remark = #{c_remark},-->
+<!--			</if>-->
+<!--		 -->
+<!--		</trim>-->
+<!--		  where n_entryid = #{n_entryid}-->
+<!--	</update>-->
+	
+	<delete  id="deletesaleorderformentry" parameterType="java.util.Map">
+	      delete from t_sale_order_form_entry
+	      where n_entryid = #{n_entryid}
+	</delete>
+	
+	
+	
+	<select id="getorderformdetail" resultType="java.util.HashMap" parameterType="java.util.Map">
+	    select 	t_sale_order_form_detail.n_orderid,   --订单id
+	t_sale_order_form_detail.n_entryid,   --订单表体id
+	t_sale_order_form_detail.n_produceid, --评审单id  
+	t_sale_order_form_detail.n_produce_entryid, --评审单表体id  
+	t_sale_order_form_detail.n_noticeid,        --通知单id
+	t_sale_order_form_detail.n_notice_entryid,  --通知单表体id 
+	t_sale_order_form_detail.n_taskid,          --任务单id    【关联任务单】
+	t_sale_order_form_detail.n_task_entryid,    --任务单表体id 【关联任务单表体id】
+	t_sale_order_form_detail.i_orderid,         --顺序号
+	t_sale_order_form_detail.n_cd,              --长度  【显示和录入都是整数】
+	t_sale_order_form_detail.i_number  ,        --件数【显示和录入都是整数】
+	t_sale_order_form_detail.n_min,             --大最小重量(kg)【显示和录入都是整数】 
+	t_sale_order_form_detail.n_max,             --最小重量(kg) 【显示和录入都是整数】
+	t_sale_order_form_detail.n_total,           --总重量(kg)    【显示和录入都是整数】 
+	t_sale_order_form_detail.c_fhbz,     --发货备注
+	t_sale_order_form_detail.c_name,     --备注
+	t_sale_order_form_detail.n_modifier, --修改人id
+	CONVERT(varchar(100), t_sale_order_form_detail.d_date, 20) d_date                      --修改日期
+from 	t_sale_order_form_detail   
+where 	t_sale_order_form_detail.n_entryid = #{n_entryid}
+order by t_sale_order_form_detail.i_orderid
+	    
+	</select>
+<!--	<insert id="insertsaleorderformdetail" parameterType="com.school.entity.SaleOrder">-->
+<!--		insert into t_sale_order_form_detail-->
+<!--		<trim prefix="(" suffix=")" suffixOverrides=",">-->
+<!--			<if test="n_orderid != null">-->
+<!--				n_orderid,-->
+<!--			</if>-->
+<!--			<if test="n_entryid != null">-->
+<!--				n_entryid,-->
+<!--			</if>-->
+<!--			<if test="i_orderid != null">-->
+<!--				i_orderid,-->
+<!--			</if>-->
+<!--			<if test="n_cd != null">-->
+<!--				n_cd,-->
+<!--			</if>-->
+<!--			<if test="i_number != null">-->
+<!--				i_number,-->
+<!--			</if>-->
+<!--			<if test="n_min != null">-->
+<!--				n_min,-->
+<!--			</if>-->
+<!--			<if test="n_max != null">-->
+<!--				n_max,-->
+<!--			</if>-->
+<!--			<if test="n_total != null">-->
+<!--				n_total,-->
+<!--			</if>-->
+<!--			<if test="c_fhbz != null">-->
+<!--				c_fhbz,-->
+<!--			</if>-->
+<!--			<if test="c_name != null">-->
+<!--				c_name,-->
+<!--			</if>-->
+<!--		</trim>-->
+<!--		<trim prefix="values (" suffix=")" suffixOverrides=",">-->
+<!--		 -->
+<!--			<if test="n_orderid != null">-->
+<!--				#{n_orderid},-->
+<!--			</if>-->
+<!--			<if test="n_entryid != null">-->
+<!--				#{n_entryid},-->
+<!--			</if>-->
+<!--			<if test="i_orderid != null">-->
+<!--				#{i_orderid},-->
+<!--			</if>-->
+<!--			<if test="n_cd != null">-->
+<!--				#{n_cd},-->
+<!--			</if>-->
+<!--			<if test="i_number != null">-->
+<!--				#{i_number},-->
+<!--			</if>-->
+<!--			<if test="n_min != null">-->
+<!--				#{n_min},-->
+<!--			</if>-->
+<!--			<if test="n_max != null">-->
+<!--				#{n_max},-->
+<!--			</if>-->
+<!--			<if test="n_total != null">-->
+<!--				#{n_total},-->
+<!--			</if>-->
+<!--			<if test="c_fhbz != null">-->
+<!--				#{c_fhbz},-->
+<!--			</if>-->
+<!--			<if test="c_name != null">-->
+<!--				#{c_name},-->
+<!--			</if>-->
+<!--		</trim>-->
+<!--	</insert>-->
+<!--	-->
+<!--		<delete  id="deletesaleorderformdetail" parameterType="com.school.entity.SaleOrderEntry">-->
+<!--	      delete from t_sale_order_form_detail-->
+<!--	      where n_entryid = #{n_entryid}-->
+<!--	</delete>-->
+	
+	<update id="check" parameterType="java.util.Map">
+		update t_sale_order_form
+set n_auditer=#{adc_id},d_audit_date=getdate()
+where n_orderid = #{n_orderid}
+	</update>
+	
+		<update id="uncheck" parameterType="java.util.Map">
+		update t_sale_order_form
+set n_auditer=null,d_audit_date=null
+where n_orderid = #{n_orderid}
+	</update>
+	
+		<update id="stop" parameterType="java.util.Map">
+		update t_sale_order_form_entry
+set n_stoper=#{adc_id},d_stop_date=getdate()
+where n_entryid = #{n_entryid}
+
+	</update>
+	
+	<update id="unstop" parameterType="java.util.Map">
+		update t_sale_order_form_entry
+set n_stoper=null,d_stop_date=null
+where n_entryid = #{n_entryid}
+
+
+	</update>
+	
+	<select id="allquery" resultType="java.util.HashMap" parameterType="java.util.Map">
+	
+	select  t_sale_order_form.n_orderid ,        	--订单id            
+	t_sale_order_form.n_report_unitid ,      --上报单位id      
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_report_unitid) as 'as_unitname', --上报单位
+	CONVERT(varchar(100), t_sale_order_form.d_order_date, 20) d_order_date ,           --订单日期   
+	CONVERT(varchar(100), t_sale_order_form.d_deliver_date, 20) d_deliver_date ,     	--交付日期
+	t_sale_order_form.c_order_code  , 	--订单号
+	CONVERT(varchar(100), t_sale_order_form.d_audit_date, 20) d_audit_date,		--审核日期
+	t_sale_order_form.n_auditer,		--审核人id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid=  t_sale_order_form.n_auditer) 'c_auditer',--审核人
+	t_sale_order_form.n_tableerid , --制单人id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid = t_sale_order_form.n_tableerid) as 'as_tableer',--制单人
+	t_sale_order_form_entry.n_productid ,         --产品id   
+	(select a.c_basic_name+'|'+a.c_basic_code from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_productid ) as 'c_cpname',--产品名称
+	t_sale_order_form_entry.n_customid ,           --客户id
+	(select a.c_basic_name+'|'+a.c_basic_code from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_customid ) as 'c_cwname',--客户名称
+	t_sale_order_form_entry.n_product_type_id ,          --产品大类id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_product_type_id ) as 'c_dlname',--产品大类名称
+	t_sale_order_form_entry.n_colorid ,           --颜色id
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_colorid ) as 'c_ysname',--颜色名称
+	t_sale_order_form_entry.n_length ,            --长度
+	t_sale_order_form_entry.n_width ,             --宽度
+	t_sale_order_form_entry.n_thinckness,         --厚度   
+	t_sale_order_form_entry.n_public_errand_add ,   --**公差+       
+	t_sale_order_form_entry.n_public_errand ,  --**公差-           
+	t_sale_order_form_entry.n_packages ,       --**件数    
+	t_sale_order_form_entry.n_weight ,         --**单件总量  
+	t_sale_order_form_entry.n_price ,           --**单价
+	t_sale_order_form_entry.c_remark ,           --**备注
+	t_sale_order_form_entry.n_userid ,           --**业务员
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_userid ) as 'c_ywyname',--业务员名称
+	CONVERT(varchar(100), t_sale_order_form_entry.d_delivery_date, 20) d_delivery_date ,    --**交付日期       
+	t_sale_order_form_entry.n_tzd_weight ,        --暂不用   
+	t_sale_order_form_entry.n_rwd_weight ,        --暂不用  
+	t_sale_order_form_entry.n_had_weight ,        --暂不用  
+	t_sale_order_form_entry.n_in_weight ,        --暂不用   
+	t_sale_order_form_entry.n_give_weight ,       --暂不用    
+	t_sale_order_form_entry.n_stoper ,           --**终止人
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_stoper ) as 'c_stopername',--终止人名称
+	CONVERT(varchar(100), t_sale_order_form_entry.d_stop_date, 20) d_stop_date ,        --**终止日期   
+	t_sale_order_form_entry.i_press_blank ,      --**压边    【0、否1、单2、双3、筒】 
+	t_sale_order_form_entry.n_finisher ,         --**完成人  [制作评审单时，如果认为该订单已经被评审完毕，标识完成]
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_finisher ) as 'c_finishname',--完成人名称
+	CONVERT(varchar(100), t_sale_order_form_entry.d_finish_date, 20) d_finish_date ,      --**完成日期     [制作评审单时，如果认为该订单已经被评审完毕，标识完成]
+	t_sale_order_form_entry.i_sctype ,           --**标准 【1、重量2、长度】
+	t_sale_order_form_entry.n_entryid ,          --**表体id 
+	t_sale_order_form_entry.i_remark ,           --**是否有明细，【0、无1、有，如果该表体对应的明细保存时需要将该字段更新为1，如果对应的明细全部删除了，则该字段修改为0】
+	t_sale_order_form_entry.n_total_weight ,     --**总重量      
+	t_sale_order_form_entry.n_cptymcid ,		--暂不用
+	t_sale_order_form_entry.i_write_total,		--暂不用
+	t_sale_order_form_entry.c_gc,			--**公差
+	t_sale_order_form_entry.c_fhbz,			--**发货备注
+	t_sale_order_form_entry.i_ybtype ,		--**压边前后
+	t_sale_order_form_entry.n_ppid	,		--品牌id 
+	(select a.c_basic_name from t_sys_basic a where a.n_basicid =t_sale_order_form_entry.n_ppid ) as 'c_ppname'--品牌名称
+from 	t_sale_order_form     ,t_sale_order_form_entry 
+where  t_sale_order_form_entry.n_orderid= t_sale_order_form.n_orderid
+and    (  (t_sale_order_form.d_audit_date <![CDATA[ >= ]]>   #{adt_begin}
+and          t_sale_order_form.d_audit_date <![CDATA[ < ]]> #{adt_end})   or  t_sale_order_form.d_audit_date is null)
+and    n_report_unitid in (select a.n_qxid from t_sys_user_qx a where a.n_userid =#{adc_id} and i_qxtype = 6 ) --当前操作者id
+
+<if test="adc_cpid != null and adc_cpid != '' and adc_cpid != 0">
+  t_sale_order_form_entry.n_productid =#{adc_cpid}))    --产品di 【前端传入条件时，产品和客户必有其一】
+  </if>
+  <if test="adc_khid != null and adc_khid != '' and adc_khid != 0">
+   t_sale_order_form_entry.n_customid  =#{adc_khid} ))   --客户id  【产品或客户没有条件时默认为id等于0】
+   </if>
+   <if test="adc_ysid != null and adc_ysid != '' and adc_ysid != 0">
+   t_sale_order_form_entry.n_colorid  =#{adc_ysid} ))    --颜色id
+ </if>
+     <if test="adc_kd != null and adc_kd != '' and adc_kd != 0">
+   t_sale_order_form_entry.n_width=#{adc_kd}))
+ </if>
+  <if test="adc_hd != null and adc_hd != '' and adc_hd != 0">
+   t_sale_order_form_entry.n_thinckness=#{adc_hd}))  --厚度 [如果不按厚度查询厚度默认为0]
+   </if>
+order by t_sale_order_form.d_audit_date          desc  , t_sale_order_form.c_order_code          asc
+	
+	</select>
+
+</mapper>

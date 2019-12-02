@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="apiservice.Sys" >
+  
+  
+ 
+  <select id="getUser"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select n_basicid,c_basic_name,i_sex,d_birth,n_unitid,(select c_basic_name from t_sys_basic where n_basicid = n_unitid) as 'is_unit_name',c_phone,
+       n_dutyid,(select c_basic_name from t_sys_basic where n_basicid = n_dutyid) as 'is_duty_name',
+	n_jdid,(select c_basic_name from t_sys_basic where n_basicid = n_jdid) as 'is_jdname',
+	n_cjid,(select c_basic_name from t_sys_basic where n_basicid = n_cjid) as 'is_cjname',
+	n_ckid,(select c_basic_name from t_sys_basic where n_basicid = n_ckid) as 'is_ckname'
+			from   t_sys_user
+			where  c_login_name = #{c_login_name}
+			and	 c_md5 = #{c_password}
+			and   c_deleted='0'
+  </select>
+  
+    <select id="reportunitlist"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select  t_sys_basic.n_basicid ,           
+	t_sys_basic.c_basic_code ,          
+	t_sys_basic.c_basic_name ,       
+	t_sys_basic.c_basic_type ,     
+	t_sys_basic.c_basic_pym     
+from 	t_sys_basic      
+where ( t_sys_basic.c_basic_type in ('30','01') ) 
+and   ( t_sys_basic.c_deleted = '0' ) 
+and   t_sys_basic.n_basicid in (select a.n_qxid from t_sys_user_qx a 
+where 1=1
+<if test="adc_id != null and adc_id != ''">
+and a.n_userid = #{adc_id}
+</if>
+and a.i_qxtype = 6)
+order by t_sys_basic.c_basic_type          asc,       
+t_sys_basic.c_basic_code          asc
+
+  </select>
+  
+  <select id="scjdlist"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+     select t_sys_basic.n_basicid,   --生产基地id
+         t_sys_basic.c_basic_code,--生产基地代码   
+         t_sys_basic.c_basic_name,--上产基地名称   
+         t_sys_basic.c_basic_type  
+    from t_sys_basic  
+   where ( t_sys_basic.c_basic_type = '21' ) and  
+         ( t_sys_basic.c_deleted = '0' )   
+order by t_sys_basic.c_basic_code asc   
+
+
+  </select>
+  
+    <select id="productlist"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+     select 	t_sys_basic.n_basicid,   --产品id
+	t_sys_basic.c_basic_code,--产品代码   
+	t_sys_basic.c_basic_name,--产品名称   
+	t_sys_basic.c_basic_type,
+	t_sys_basic.c_basic_pym, --产品拼音码 
+	(select a.n_product_type_id from t_sys_product_name_info a where a.n_basicid=  t_sys_basic.n_basicid) as 'n_product_type_id',  --产品大类id
+	(select a.c_basic_name from t_sys_basic a,t_sys_product_name_info b where a.n_basicid=b.n_product_type_id and b.n_basicid=  t_sys_basic.n_basicid) as 'c_product_type_name'  --产品大类
+from 	t_sys_basic  
+where 	t_sys_basic.c_basic_type = '51'  
+and 	t_sys_basic.c_deleted='0'
+and 	exists(select 1 from t_sys_user_qx a where 1=1
+
+<if test="adc_id != null and adc_id != ''">
+and a.n_userid = #{adc_id}
+</if>
+and a.i_qxtype = 5 and a.n_qxid = t_sys_basic.n_basicid)
+order by t_sys_basic.c_basic_code asc  
+ 
+
+
+  </select>
+  
+  <select id="customlist"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+  select t_sys_basic.n_basicid,   --客户id
+         t_sys_basic.c_basic_code,   --客户代码
+         t_sys_basic.c_basic_name as 'c_basic_name',   --客户名称
+         t_sys_basic.c_basic_type,   
+         t_sys_basic.c_txm,        --客户条形码
+         t_sys_basic.c_basic_pym   --客户拼音码
+    from t_sys_basic  
+   where t_sys_basic.c_basic_type in ('30','08','09','05','04')    and t_sys_basic.c_deleted='0'
+order by t_sys_basic.c_basic_type asc,   
+         t_sys_basic.c_basic_name asc
+  
+  </select>
+  
+   <select id="colorlist"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+   select t_sys_basic.n_basicid,   --颜色id
+         t_sys_basic.c_basic_code,   --颜色代码
+         t_sys_basic.c_basic_name as 'c_basic_name',   --颜色
+         t_sys_basic.c_basic_type
+      from t_sys_basic  
+   where ( t_sys_basic.c_basic_type = '52' ) and  
+         ( t_sys_basic.c_deleted = '0' )   
+order by t_sys_basic.c_basic_code asc
+   
+  </select>
+  
+   <select id="cutlist"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+   select t_sys_basic.n_basicid,   
+         t_sys_basic.c_basic_code,   
+         t_sys_basic.c_basic_name,   
+         t_sys_basic.c_basic_type  
+    from t_sys_basic  
+   where ( t_sys_basic.c_basic_type = '53' ) and  
+         ( t_sys_basic.c_deleted = '0' )   
+order by t_sys_basic.c_basic_code asc  
+   
+  </select>
+  
+     <select id="userlist"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+  
+  select 
+   n_basicid, --人员id
+   c_basic_code,--人员代码
+   c_basic_name,--人员姓名
+   c_phone, --联系电话
+   n_unitid,--所在单位
+   n_dutyid,--工种
+   n_jdid,--生产基地
+   n_cjid, --车间
+   n_ckid--仓库
+   from t_sys_user
+   where c_deleted='0'
+  <if test="adc_id != null and adc_id != ''">
+and n_unitid = #{adc_id}
+</if>
+  </select>
+  <select id="pplist"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+  
+select t_sys_basic.n_basicid,   --品牌id
+         t_sys_basic.c_basic_code,   --品牌代码
+         t_sys_basic.c_basic_name as 'c_basic_name',   --品牌
+         t_sys_basic.c_basic_type
+from t_sys_basic where c_basic_type='60' and c_deleted='0'
+order by c_basic_code
+
+  </select>
+  
+  
+     <select id="menulist"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+       select t_app_menu.c_menu_code,t_app_menu.c_menu_name,
+ t_app_menu.i_type,
+ (case t_app_menu.i_type when 1 then '销售订单' when 2 then '评审单' when 3 then '通知单' when 4 then '员工打卡' when 5 then '售后服务' when 10 then '设置' end)  as 'c_typename' ,
+ isnull((select 1 from T_SYS_USER_MENU_QX A where A.i_qxtype=2 and A.c_menu_code =t_app_menu.c_menu_code and A.n_userid = #{act_id} ),0) as 'i_usable'
+from t_app_menu
+where  t_app_menu.i_class = 2
+   
+  </select>
+  
+   <select id="getmaxid"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+       select zdid
+from t_sys_zdid
+where bywmc=#{table}
+       
+  </select>
+  
+  	<insert id="insertmaxid" parameterType="java.util.Map">
+  	insert into t_sys_zdid(bywmc,bzwmc,zdid)
+	values(#{table},'',#{zdid})
+  	
+  	</insert>
+  	
+  	<update id="updatemaxid" parameterType="java.util.Map">
+  	   update t_sys_zdid
+	set zdid = #{zdid}
+	where bywmc=#{table}
+  	   
+    </update>
+    
+    <select id="getc_pyt"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+       select  c_pyt   
+			from t_sys_basic where n_basicid= #{adc_id}  --adc_id 上报单位
+       
+   </select>
+   
+    <select id="getll_count"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+     select count(*)  as ll_count
+		from t_sys_bill_code 
+		where i_billtype=#{ai_type} and n_objectid = #{adc_id}
+		and c_date_month = #{as_date}
+      </select>
+  
+      <select id="geti_maxcode"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+       select i_maxcode  
+			from t_sys_bill_code
+			where i_billtype=#{ai_type} and n_objectid = #{adc_id}
+			and c_date_month = #{as_date}
+
+      </select>
+      
+      <update id="updatei_maxcode" parameterType="java.util.Map">
+  	   update t_sys_bill_code
+				set i_maxcode = #{ll_maxcode}
+				where i_billtype=#{ai_type} and n_objectid = #{adc_id}
+				and c_date_month = #{as_date}  	   
+    </update>
+    
+    <insert id="inserti_maxcode" parameterType="java.util.Map">
+  	insert into t_sys_bill_code(n_billid,i_billtype,n_objectid,c_bill_pyt,c_date_month,i_maxcode )
+			values(#{ldc_maxid},#{ai_type},#{adc_id},#{ls_pyt},#{as_date},#{ll_maxcode})
+  	</insert>
+  
+  
+
+  
+</mapper>

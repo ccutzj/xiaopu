@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="apiservice.Goods">
+
+    
+      <select id="goodsTypeList"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select goodsTypeId,goodsTypeName from  shop_goodstype order by orderNumber desc
+    </select>
+
+	<insert id="addGoods" parameterType="java.util.Map">
+		insert into shop_goods
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="shopId != null">
+				shopId,
+			</if>
+			<if test="goodsId != null">
+				goodsId,
+			</if>
+			<if test="goodsName != null">
+				goodsName,
+			</if>
+			<if test="specs != null">
+				specs,
+			</if>
+			<if test="pic != null">
+				pic,
+			</if>
+			<if test="orderNumber != null">
+				orderNumber,
+			</if>
+			<if test="remarks != null">
+				remarks,
+			</if>
+			<if test="goodsState != null">
+				goodsState,
+			</if>
+			<if test="goodsTypeId != null">
+				goodsTypeId,
+			</if>
+			<if test="newGoods != null">
+				newGoods,
+			</if>
+			<if test="recommend != null">
+				recommend,
+			</if>
+			<if test="goodsPrice != null">
+				goodsPrice,
+			</if>
+			<if test="markPrice != null">
+				markPrice,
+			</if>
+			<if test="sales != null">
+				sales,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="shopId != null">
+				#{shopId},
+			</if>
+			<if test="goodsId != null">
+				#{goodsId},
+			</if>
+			<if test="goodsName != null">
+				#{goodsName},
+			</if>
+			<if test="specs != null">
+				#{specs},
+			</if>
+			<if test="pic != null">
+				#{pic},
+			</if>
+			<if test="orderNumber != null">
+				#{orderNumber},
+			</if>
+			<if test="remarks != null">
+				#{remarks},
+			</if>
+			<if test="goodsState != null">
+				#{goodsState},
+			</if>
+			<if test="goodsTypeId != null">
+				#{goodsTypeId},
+			</if>
+			<if test="newGoods != null">
+				#{newGoods},
+			</if>
+			<if test="recommend != null">
+				#{recommend},
+			</if>
+			<if test="goodsPrice != null">
+				#{goodsPrice},
+			</if>
+			<if test="markPrice != null">
+				#{markPrice},
+			</if>
+			<if test="sales != null">
+				#{sales},
+			</if>
+		</trim>
+
+	</insert>
+
+	<update id="updateGoods" parameterType="java.util.Map">
+		update shop_goods
+		<trim prefix="set" suffixOverrides=",">
+
+			<if test="shopId != null">
+				shopId = #{shopId},
+			</if>
+			<if test="goodsName != null">
+				goodsName =#{goodsName},
+			</if>
+			<if test="specs != null">
+				specs = #{specs},
+			</if>
+			<if test="pic != null">
+				pic = #{pic},
+			</if>
+			<if test="orderNumber != null">
+				orderNumber = #{orderNumber},
+			</if>
+			<if test="remarks != null">
+				remarks = #{remarks},
+			</if>
+			<if test="goodsState != null">
+				goodsState = #{goodsState},
+			</if>
+			<if test="goodsTypeId != null">
+				goodsTypeId = #{goodsTypeId},
+			</if>
+			<if test="newGoods != null">
+				newGoods = #{newGoods},
+			</if>
+			<if test="recommend != null">
+				recommend = #{recommend},
+			</if>
+			<if test="goodsPrice != null">
+				goodsPrice = #{goodsPrice},
+			</if>
+			<if test="markPrice != null">
+				markPrice = #{markPrice},
+			</if>
+			<if test="sales != null">
+				sales = #{sales},
+			</if>
+		</trim>
+		where goodsId = #{goodsId}
+	</update>
+
+  <select id="goodsList"  resultType="java.util.HashMap"   parameterType="java.util.Map" >
+        select 
+              shopId,
+              goodsId,
+              goodsName,
+              specs,
+              pic,
+              orderNumber,
+              remarks,
+              goodsState,
+              goodsTypeId,
+              newGoods,
+              recommend,
+              goodsPrice,
+              markPrice,
+              sales
+        <where>
+        <if test="shopId != null and shopId != ''" >
+			and shopId = #{shopId}
+		</if>
+		 <if test="goodsId != null and goodsId != ''" >
+			and goodsId = #{goodsId}
+		</if>
+		 <if test="goodsTypeId != null and goodsTypeId != ''" >
+			and goodsTypeId = #{goodsTypeId}
+		</if>
+		<if test="goodsState != null and goodsState != ''" >
+			and goodsState = #{goodsState}
+		</if>
+		<if test="newGoods != null and newGoods != ''" >
+			and newGoods = #{newGoods}
+		</if>
+		<if test="recommend != null and recommend != ''" >
+			and recommend = #{recommend}
+		</if>
+		</where>
+		order by orderNumber desc
+  </select>
+  
+
+
+
+
+
+
+</mapper>
